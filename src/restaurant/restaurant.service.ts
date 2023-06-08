@@ -1,26 +1,77 @@
 import { Injectable } from '@nestjs/common';
+import { v4 as uuid } from 'uuid';
 import { CreateRestaurantDto } from './dto/create-restaurant.dto';
 import { UpdateRestaurantDto } from './dto/update-restaurant.dto';
+import { dynamoDBClient } from '../aws-config/dynamoDBClient';
+
+const { TABLE_RESTAURANTS } = process.env;
 
 @Injectable()
 export class RestaurantService {
-  create(createRestaurantDto: CreateRestaurantDto) {
-    return 'This action adds a new restaurant';
+  async create(createRestaurantDto: CreateRestaurantDto) {
+    const response = await dynamoDBClient()
+      .put({
+        TableName: TABLE_RESTAURANTS,
+        Item: {
+          restaurantName: createRestaurantDto.restaurantName,
+          uuid: uuid(),
+          foodNames: createRestaurantDto.foodNames,
+        },
+      })
+      .promise();
+    return response;
   }
 
-  findAll() {
-    return `This action returns all restaurant`;
+  async findAll() {
+    const results = await dynamoDBClient()
+      .scan({
+        TableName: TABLE_RESTAURANTS,
+      })
+      .promise();
+
+    return results.Items;
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} restaurant`;
+  async findOne(restaurantName: string) {
+    const result = await dynamoDBClient()
+      .get({
+        TableName: TABLE_RESTAURANTS,
+        Key: {
+          restaurantName,
+        },
+      })
+      .promise();
+
+    return result.Item;
   }
 
-  update(id: number, updateRestaurantDto: UpdateRestaurantDto) {
-    return `This action updates a #${id} restaurant`;
+  async update(
+    restaurantName: string,
+    updateRestaurantDto: UpdateRestaurantDto,
+  ) {
+    const updated = await dynamoDBClient()
+      .update({
+        TableName: TABLE_RESTAURANTS,
+        Key: { restaurantName },
+        UpdateExpression: 'set #foodNames = :foodNames',
+        ExpressionAttributeNames: {
+          '#foodNames': 'foodNames',
+        },
+        ExpressionAttributeValues: {
+          ':foodNames': updateRestaurantDto.foodNames,
+        },
+        ReturnValues: 'ALL_NEW',
+      })
+      .promise();
+    return updated.Attributes;
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} restaurant`;
+  async remove(restaurantName: string) {
+    return await dynamoDBClient()
+      .delete({
+        TableName: TABLE_RESTAURANTS,
+        Key: { restaurantName },
+      })
+      .promise();
   }
 }

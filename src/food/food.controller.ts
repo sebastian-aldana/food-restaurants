@@ -1,4 +1,12 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+} from '@nestjs/common';
 import { FoodService } from './food.service';
 import { CreateFoodDto } from './dto/create-food.dto';
 import { UpdateFoodDto } from './dto/update-food.dto';
@@ -12,23 +20,33 @@ export class FoodController {
     return this.foodService.create(createFoodDto);
   }
 
+  /* `@Get() findAll()` is a decorator that specifies the HTTP request method and the endpoint path for
+  the `findAll` method. It means that when a GET request is made to the `/food` endpoint, the
+  `findAll` method will be called. The `findAll` method is responsible for returning all the food
+  items stored in the database. */
   @Get()
   findAll() {
     return this.foodService.findAll();
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.foodService.findOne(+id);
+  /* `@Get(':name')` is a decorator that specifies the HTTP request method and the endpoint path for
+  the `findOne` method. It means that when a GET request is made to the `/food/:name` endpoint, the
+  `findOne` method will be called. */
+  @Get(':foodName')
+  findOne(@Param('foodName') foodName: string) {
+    return this.foodService.findOne(foodName);
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateFoodDto: UpdateFoodDto) {
-    return this.foodService.update(+id, updateFoodDto);
+  @Patch(':foodName')
+  update(
+    @Param('foodName') foodName: string,
+    @Body() updateFoodDto: UpdateFoodDto,
+  ) {
+    return this.foodService.update(foodName, updateFoodDto);
   }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.foodService.remove(+id);
+  @Delete(':foodName')
+  remove(@Param('foodName') foodName: string) {
+    return this.foodService.remove(foodName);
   }
 }
