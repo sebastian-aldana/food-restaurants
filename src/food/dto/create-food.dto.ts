@@ -1,4 +1,4 @@
 export class CreateFoodDto {
-  restaurants: string[];
-  foodName: string;
+  items: string[];
+  name: string;
 }

@@ -17,29 +17,29 @@ export class RestaurantController {
 
   @Post()
   create(@Body() createRestaurantDto: CreateRestaurantDto) {
-    return this.restaurantService.create(createRestaurantDto);
+    return this.restaurantService.createRestaurant(createRestaurantDto);
   }
 
   @Get()
   findAll() {
-    return this.restaurantService.findAll();
+    return this.restaurantService.findAllRestaurant();
   }
 
   @Get(':restaurantName')
   findOne(@Param('restaurantName') restaurantName: string) {
-    return this.restaurantService.findOne(restaurantName);
+    return this.restaurantService.findOneRestaurant(restaurantName);
   }
 
   @Patch(':restaurantName')
   update(
-    @Param('restaurantName') restaurantName: string,
+    @Param('restaurantName') name: string,
     @Body() updateRestaurantDto: UpdateRestaurantDto,
   ) {
-    return this.restaurantService.update(restaurantName, updateRestaurantDto);
+    return this.restaurantService.updateRestaurant(name, updateRestaurantDto);
   }
 
   @Delete(':restaurantName')
   remove(@Param('restaurantName') restaurantName: string) {
-    return this.restaurantService.remove(restaurantName);
+    return this.restaurantService.removeRestaurant(restaurantName);
   }
 }

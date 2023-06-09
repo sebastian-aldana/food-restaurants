@@ -1,77 +1,43 @@
 import { Injectable } from '@nestjs/common';
-import { v4 as uuid } from 'uuid';
 import { CreateRestaurantDto } from './dto/create-restaurant.dto';
 import { UpdateRestaurantDto } from './dto/update-restaurant.dto';
-import { dynamoDBClient } from '../aws-config/dynamoDBClient';
+import { FoodRestaurantService } from 'src/food-restaurant/food-restaurant.service';
 
 const { TABLE_RESTAURANTS } = process.env;
 
 @Injectable()
 export class RestaurantService {
-  async create(createRestaurantDto: CreateRestaurantDto) {
-    const response = await dynamoDBClient()
-      .put({
-        TableName: TABLE_RESTAURANTS,
-        Item: {
-          restaurantName: createRestaurantDto.restaurantName,
-          uuid: uuid(),
-          foodNames: createRestaurantDto.foodNames,
-        },
-      })
-      .promise();
-    return response;
+  constructor(private readonly foodRestaurantService: FoodRestaurantService) {}
+  async createRestaurant(createRestaurantDto: CreateRestaurantDto) {
+    return this.foodRestaurantService.createItem(
+      createRestaurantDto,
+      TABLE_RESTAURANTS,
+    );
   }
 
-  async findAll() {
-    const results = await dynamoDBClient()
-      .scan({
-        TableName: TABLE_RESTAURANTS,
-      })
-      .promise();
-
-    return results.Items;
+  async findAllRestaurant() {
+    return this.foodRestaurantService.getAllItems(TABLE_RESTAURANTS);
   }
 
-  async findOne(restaurantName: string) {
-    const result = await dynamoDBClient()
-      .get({
-        TableName: TABLE_RESTAURANTS,
-        Key: {
-          restaurantName,
-        },
-      })
-      .promise();
-
-    return result.Item;
+  async findOneRestaurant(restaurantName: string) {
+    return await this.foodRestaurantService.getItemByName(
+      restaurantName,
+      TABLE_RESTAURANTS,
+    );
   }
 
-  async update(
-    restaurantName: string,
-    updateRestaurantDto: UpdateRestaurantDto,
-  ) {
-    const updated = await dynamoDBClient()
-      .update({
-        TableName: TABLE_RESTAURANTS,
-        Key: { restaurantName },
-        UpdateExpression: 'set #foodNames = :foodNames',
-        ExpressionAttributeNames: {
-          '#foodNames': 'foodNames',
-        },
-        ExpressionAttributeValues: {
-          ':foodNames': updateRestaurantDto.foodNames,
-        },
-        ReturnValues: 'ALL_NEW',
-      })
-      .promise();
-    return updated.Attributes;
+  async updateRestaurant(name, updateRestaurantDto: UpdateRestaurantDto) {
+    await this.foodRestaurantService.updateItem(
+      name,
+      updateRestaurantDto,
+      TABLE_RESTAURANTS,
+    );
   }
 
-  async remove(restaurantName: string) {
-    return await dynamoDBClient()
-      .delete({
-        TableName: TABLE_RESTAURANTS,
-        Key: { restaurantName },
-      })
-      .promise();
+  async removeRestaurant(restaurantName: string) {
+    await this.foodRestaurantService.DeleteItem(
+      restaurantName,
+      TABLE_RESTAURANTS,
+    );
   }
 }
